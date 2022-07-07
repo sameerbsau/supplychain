@@ -1,2 +1,5 @@
-/build/*
+*/build/*
 /build/
+/workflows/build/
+/contracts/build/
+/clients/build/
