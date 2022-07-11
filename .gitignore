@@ -4,5 +4,7 @@
 /contracts/build/
 /clients/build/
 /workflows/logs/
+/contracts/build/
+/clients/build/
 /logs/
 /.gradle/
