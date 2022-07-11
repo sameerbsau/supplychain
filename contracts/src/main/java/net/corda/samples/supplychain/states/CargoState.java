@@ -6,6 +6,7 @@ import net.corda.core.contracts.ContractState;
 import net.corda.core.identity.AbstractParty;
 import net.corda.core.identity.AnonymousParty;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,12 +23,24 @@ public class CargoState implements ContractState {
     private List<AbstractParty> participants;
 
 
-    public CargoState(AnonymousParty pickUpFrom, AnonymousParty deliverTo, String cargo, AbstractParty shipper) {
+    public String getCargoCreatedTime() {
+        return cargoCreatedTime;
+    }
+
+    public void setCargoCreatedTime(String cargoCreatedTime) {
+        this.cargoCreatedTime = cargoCreatedTime;
+    }
+
+    private String cargoCreatedTime;
+
+
+    public CargoState(AnonymousParty pickUpFrom, AnonymousParty deliverTo, String cargo, AbstractParty shipper,String cargoCreatedTime) {
         this.pickUpFrom = pickUpFrom;
         this.deliverTo = deliverTo;
         this.cargo = cargo;
         this.shipper = shipper;
         this.participants = new ArrayList<AbstractParty>();
+        this.cargoCreatedTime =cargoCreatedTime;
         participants.add(pickUpFrom);
         participants.add(deliverTo);
         participants.add(shipper);

@@ -7,7 +7,7 @@
         <Property name="archive">${log-path}/archive</Property>
     </Properties>
 
-    <ThresholdFilter level="trace"/>
+    <ThresholdFilter level="info"/>
 
     <Appenders>
         <Console name="Console-Appender" target="SYSTEM_OUT">

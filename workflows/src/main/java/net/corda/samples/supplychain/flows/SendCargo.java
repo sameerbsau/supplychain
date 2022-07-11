@@ -18,6 +18,7 @@ import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 
 import java.security.PublicKey;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,30 +52,39 @@ public class SendCargo extends FlowLogic<String> {
         //grab the account information
         AccountInfo myAccount = accountService.accountInfo(pickupFrom).get(0).getState().getData();
         PublicKey myKey = subFlow(new NewKeyForAccount(myAccount.getIdentifier().getId())).getOwningKey();
-
+        System.out.println("1");
         AccountInfo targetAccount = accountService.accountInfo(whereTo).get(0).getState().getData();
         AnonymousParty targetAcctAnonymousParty = subFlow(new RequestKeyForAccount(targetAccount));
-
+        System.out.println("2");
+        String create = "randomString";
+//        Timestamp create = new Timestamp(System.currentTimeMillis());
+        System.out.println("3");
         //generating State for transfer
-        CargoState output = new CargoState(new AnonymousParty(myKey),targetAcctAnonymousParty,cargo,getOurIdentity());
-
+        CargoState output = new CargoState(new AnonymousParty(myKey),targetAcctAnonymousParty,cargo,getOurIdentity(),create);
+        System.out.println("4");
         // Obtain a reference to a notary we wish to use.
         /** Explicit selection of notary by CordaX500Name - argument can by coded in flows or parsed from config (Preferred)*/
         final Party notary = getServiceHub().getNetworkMapCache().getNotary(CordaX500Name.parse("O=Notary,L=London,C=GB"));
-
+        System.out.println("5");
         TransactionBuilder txbuilder = new TransactionBuilder(notary)
                 .addOutputState(output)
                 .addCommand(new CargoStateContract.Commands.Create(), Arrays.asList(targetAcctAnonymousParty.getOwningKey(),getOurIdentity().getOwningKey()));
-
+        System.out.println("6");
         //self sign Transaction
-        SignedTransaction locallySignedTx = getServiceHub().signInitialTransaction(txbuilder,Arrays.asList(getOurIdentity().getOwningKey()));
+        SignedTransaction locallySignedTx=null;
+        try {
+             locallySignedTx = getServiceHub().signInitialTransaction(txbuilder,Arrays.asList(getOurIdentity().getOwningKey()));
+        }catch(Exception e) {
+e.printStackTrace();
+        }
 
+        System.out.println("7");
         //Collect sigs
         FlowSession sessionForAccountToSendTo = initiateFlow(targetAccount.getHost());
         List<TransactionSignature> accountToMoveToSignature = (List<TransactionSignature>) subFlow(new CollectSignatureFlow(locallySignedTx,
                 sessionForAccountToSendTo,targetAcctAnonymousParty.getOwningKey()));
         SignedTransaction signedByCounterParty = locallySignedTx.withAdditionalSignatures(accountToMoveToSignature);
-
+        System.out.println("8");
         //Finalize
         subFlow(new FinalityFlow(signedByCounterParty,
                 Arrays.asList(sessionForAccountToSendTo).stream().filter(it -> it.getCounterparty() != getOurIdentity()).collect(Collectors.toList())));

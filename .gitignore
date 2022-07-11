@@ -3,3 +3,6 @@
 /workflows/build/
 /contracts/build/
 /clients/build/
+/workflows/logs/
+/logs/
+/.gradle/
