@@ -8,3 +8,7 @@
 /clients/build/
 /logs/
 /.gradle/
+/workflows/bin/
+/contracts/bin/
+/clients/bin/
+
