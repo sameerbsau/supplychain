@@ -47,6 +47,9 @@ public class ViewInboxByAccount extends FlowLogic<List<String>>{
         List<String> shippingRequest = getServiceHub().getVaultService().queryBy(ShippingRequestState.class,criteria).getStates().stream().map(
                 it -> "\nshippingRequest State : " + it.getState().getData().getCargo()).collect(Collectors.toList());
 
-        return Stream.of(InternalMessages, payments, Cargos,invoices,shippingRequest).flatMap(Collection::stream).collect(Collectors.toList());
+        List<String> placeOrders = getServiceHub().getVaultService().queryBy(OrderState.class,criteria).getStates().stream().map(
+                it -> "\norder State : " + it.getState().getData()).collect(Collectors.toList());
+
+        return Stream.of(InternalMessages, payments, Cargos,invoices,shippingRequest,placeOrders).flatMap(Collection::stream).collect(Collectors.toList());
     }
 }
