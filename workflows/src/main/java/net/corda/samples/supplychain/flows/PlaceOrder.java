@@ -14,8 +14,9 @@ import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.samples.supplychain.accountUtilities.NewKeyForAccount;
-import net.corda.samples.supplychain.contracts.InvoiceStateContract;
-import net.corda.samples.supplychain.states.InvoiceState;
+
+import net.corda.samples.supplychain.contracts.OrderStateContract;
+
 import net.corda.samples.supplychain.states.OrderState;
 
 import java.security.PublicKey;
@@ -65,12 +66,17 @@ public class PlaceOrder extends FlowLogic<String> {
 
         TransactionBuilder txbuilder = new TransactionBuilder(notary)
                 .addOutputState(output)
-                .addCommand(new InvoiceStateContract.Commands.Create(), Arrays.asList(targetAcctAnonymousParty.getOwningKey(),myKey));
+                .addCommand(new OrderStateContract.Commands.Create(), Arrays.asList(targetAcctAnonymousParty.getOwningKey(),myKey));
+
+        //verify the transaction
+
+            txbuilder.verify(getServiceHub());
+
 
         //self sign Transaction
         SignedTransaction locallySignedTx = getServiceHub().signInitialTransaction(txbuilder,Arrays.asList(getOurIdentity().getOwningKey(),myKey));
 
-        //Collect sigs
+        //Collect signs
         FlowSession sessionForAccountToSendTo = initiateFlow(targetAccount.getHost());
         List<TransactionSignature> accountToMoveToSignature = (List<TransactionSignature>) subFlow(new CollectSignatureFlow(locallySignedTx,
                 sessionForAccountToSendTo,targetAcctAnonymousParty.getOwningKey()));
@@ -102,6 +108,9 @@ class PlaceOrderResponder extends FlowLogic<Void> {
             @Override
             protected void checkTransaction(@NotNull SignedTransaction stx) throws FlowException {
                 // Custom Logic to validate transaction.
+                //seller can write the custom checks
+                //check the weight and quantity
+
             }
         });
         subFlow(new ReceiveFinalityFlow(counterpartySession));

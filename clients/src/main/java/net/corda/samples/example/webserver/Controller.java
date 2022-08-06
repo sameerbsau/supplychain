@@ -18,7 +18,9 @@ import java.util.*;
 //import net.corda.samples.example.states.IOUState;
 import net.corda.samples.supplychain.accountUtilities.CreateNewAccount;
 import net.corda.samples.supplychain.accountUtilities.ShareAccountTo;
+import net.corda.samples.supplychain.contracts.OrderStateContract;
 import net.corda.samples.supplychain.flows.*;
+import net.corda.samples.supplychain.states.OrderState;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.slf4j.Logger;
@@ -308,6 +310,32 @@ public class Controller {
                     .body(e.getMessage());
         }
     }
+
+
+    @PostMapping (value = "place-order" , produces =  TEXT_PLAIN_VALUE , headers =  "Content-Type=application/x-www-form-urlencoded" )
+    public ResponseEntity<String> placeOrder(HttpServletRequest request) throws IllegalArgumentException {
+
+
+
+
+        try {
+            String buyer = request.getParameter("buyer");
+            String seller = request.getParameter("seller");
+            String orderDetails = request.getParameter("orderDetails");
+            Double orderValue = Double.valueOf(request.getParameter("orderValue"));
+            String result = proxy.startTrackedFlowDynamic(PlaceOrder.class, buyer,seller,orderDetails,orderValue).getReturnValue().get();
+
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body( result);
+
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
+    }
+
 //    @GetMapping(value = "/ious",produces = APPLICATION_JSON_VALUE)
 //    public List<StateAndRef<IOUState>> getIOUs() {
 //        // Filter by state type: IOU.

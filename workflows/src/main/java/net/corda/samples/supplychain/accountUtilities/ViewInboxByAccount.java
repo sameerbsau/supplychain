@@ -3,12 +3,14 @@ package net.corda.samples.supplychain.accountUtilities;
 import com.r3.corda.lib.accounts.contracts.states.AccountInfo;
 import com.r3.corda.lib.accounts.workflows.services.AccountService;
 import com.r3.corda.lib.accounts.workflows.services.KeyManagementBackedAccountService;
+import net.corda.core.contracts.ContractState;
 import net.corda.core.flows.FlowException;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.StartableByRPC;
 import net.corda.core.flows.StartableByService;
 import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.samples.supplychain.states.*;
+
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,6 +34,7 @@ public class ViewInboxByAccount extends FlowLogic<List<String>>{
         QueryCriteria.VaultQueryCriteria criteria = new QueryCriteria.VaultQueryCriteria()
                 .withExternalIds(Arrays.asList(myAccount.getIdentifier().getId()));
 
+
         List<String> InternalMessages = getServiceHub().getVaultService().queryBy(InternalMessageState.class,criteria).getStates().stream().map(
                 it -> "\nInternalMessages State : " + it.getState().getData().getTask()).collect(Collectors.toList());
 
@@ -48,8 +51,9 @@ public class ViewInboxByAccount extends FlowLogic<List<String>>{
                 it -> "\nshippingRequest State : " + it.getState().getData().getCargo()).collect(Collectors.toList());
 
         List<String> placeOrders = getServiceHub().getVaultService().queryBy(OrderState.class,criteria).getStates().stream().map(
-                it -> "\norder State : " + it.getState().getData()).collect(Collectors.toList());
+                it -> "\norder State : " + it.getState().getData().getOrderValue()).collect(Collectors.toList());
 
         return Stream.of(InternalMessages, payments, Cargos,invoices,shippingRequest,placeOrders).flatMap(Collection::stream).collect(Collectors.toList());
+
     }
 }
