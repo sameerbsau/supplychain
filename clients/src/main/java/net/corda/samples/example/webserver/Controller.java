@@ -16,11 +16,13 @@ import java.util.*;
 
 //import net.corda.samples.example.flows.ExampleFlow;
 //import net.corda.samples.example.states.IOUState;
+import net.corda.samples.example.webserver.payload.OrderDetails;
 import net.corda.samples.supplychain.accountUtilities.CreateNewAccount;
 import net.corda.samples.supplychain.accountUtilities.ShareAccountTo;
 import net.corda.samples.supplychain.contracts.OrderStateContract;
 import net.corda.samples.supplychain.flows.*;
 import net.corda.samples.supplychain.states.OrderState;
+import net.corda.samples.supplychain.states.models.ProductDetails;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.slf4j.Logger;
@@ -32,6 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -203,13 +206,13 @@ public class Controller {
 
     @PostMapping (value = "send-invoice" , produces =  TEXT_PLAIN_VALUE , headers =  "Content-Type=application/x-www-form-urlencoded" )
     public ResponseEntity<String> sendInvoice(HttpServletRequest request) throws IllegalArgumentException {
-
+        UUID orderId = UUID.fromString(request.getParameter("orderId"));
         String whoAmI = request.getParameter("whoAmI");
         String whereTo = request.getParameter("whereTo");
-        String amount = request.getParameter("amount");
+        Double amount =  Double.valueOf(request.getParameter("amount"));
 
         try {
-            String result = proxy.startTrackedFlowDynamic(SendInvoice.class, whoAmI,whereTo,amount).getReturnValue().get();
+            String result = proxy.startTrackedFlowDynamic(SendInvoice.class,orderId, whoAmI,whereTo,amount).getReturnValue().get();
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)
@@ -246,13 +249,13 @@ public class Controller {
 
     @PostMapping (value = "send-payment" , produces =  TEXT_PLAIN_VALUE , headers =  "Content-Type=application/x-www-form-urlencoded" )
     public ResponseEntity<String> sendPayment(HttpServletRequest request) throws IllegalArgumentException {
-
+        UUID invoiceId = UUID.fromString(request.getParameter("invoiceId"));
         String whoAmI = request.getParameter("whoAmI");
         String whereTo = request.getParameter("whereTo");
-        String amount = request.getParameter("amount");
+        Double amount =  Double.valueOf(request.getParameter("amount"));
 
         try {
-            String result = proxy.startTrackedFlowDynamic(SendPayment.class, whoAmI,whereTo,amount).getReturnValue().get();
+            String result = proxy.startTrackedFlowDynamic(SendPayment.class,invoiceId, whoAmI,whereTo,amount).getReturnValue().get();
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)
@@ -272,10 +275,10 @@ public class Controller {
         String whoAmI = request.getParameter("whoAmI");
         String whereTo = request.getParameter("whereTo");
         String shipper = request.getParameter("shipper");
-        String Cargo = request.getParameter("Cargo");
+        UUID orderId = UUID.fromString(request.getParameter("orderId"));
 
         try {
-            String result = proxy.startTrackedFlowDynamic(SendShippingRequest.class, whoAmI,whereTo,shipper,Cargo).getReturnValue().get();
+            String result = proxy.startTrackedFlowDynamic(SendShippingRequest.class, whoAmI,whereTo,shipper,orderId).getReturnValue().get();
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)
@@ -294,17 +297,18 @@ public class Controller {
 
         String pickupFrom = request.getParameter("pickupFrom");
         String shipTo = request.getParameter("shipTo");
-        String cargo = request.getParameter("cargo");
-
+        UUID shippingId = UUID.fromString(request.getParameter("orderId"));
+        System.out.println("shippingId---->"+shippingId.toString());
 
         try {
-            String result = proxy.startTrackedFlowDynamic(SendCargo.class, pickupFrom,shipTo,cargo).getReturnValue().get();
+            String result = proxy.startTrackedFlowDynamic(SendCargo.class, pickupFrom,shipTo,shippingId).getReturnValue().get();
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body( result);
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
@@ -312,18 +316,18 @@ public class Controller {
     }
 
 
-    @PostMapping (value = "place-order" , produces =  TEXT_PLAIN_VALUE , headers =  "Content-Type=application/x-www-form-urlencoded" )
-    public ResponseEntity<String> placeOrder(HttpServletRequest request) throws IllegalArgumentException {
+    @PostMapping (value = "place-order" , produces =  TEXT_PLAIN_VALUE , headers =  "Content-Type=application/json" )
+    public ResponseEntity<String> placeOrder( @RequestBody OrderDetails orderDetails) throws IllegalArgumentException {
 
 
 
 
         try {
-            String buyer = request.getParameter("buyer");
-            String seller = request.getParameter("seller");
-            String orderDetails = request.getParameter("orderDetails");
-            Double orderValue = Double.valueOf(request.getParameter("orderValue"));
-            String result = proxy.startTrackedFlowDynamic(PlaceOrder.class, buyer,seller,orderDetails,orderValue).getReturnValue().get();
+//            String buyer = request.getParameter("buyer");
+//            String seller = request.getParameter("seller");
+//            String orderDetails = request.getParameter("orderDetails");
+//            Double orderValue = Double.valueOf(request.getParameter("orderValue"));
+            String result = proxy.startTrackedFlowDynamic(PlaceOrder.class, orderDetails.getBuyer(),orderDetails.getSeller(),orderDetails.getDetails()).getReturnValue().get();
 
             return ResponseEntity
                     .status(HttpStatus.CREATED)

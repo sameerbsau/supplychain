@@ -6,9 +6,12 @@ import com.r3.corda.lib.accounts.workflows.services.AccountService;
 import com.r3.corda.lib.accounts.workflows.flows.RequestKeyForAccount;
 import com.r3.corda.lib.accounts.workflows.services.KeyManagementBackedAccountService;
 import com.sun.istack.NotNull;
+import net.corda.core.contracts.ContractState;
 import net.corda.core.identity.CordaX500Name;
+import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.samples.supplychain.accountUtilities.NewKeyForAccount;
 import net.corda.samples.supplychain.contracts.PaymentStateContract;
+import net.corda.samples.supplychain.states.InvoiceState;
 import net.corda.samples.supplychain.states.PaymentState;
 import net.corda.core.crypto.TransactionSignature;
 import net.corda.core.flows.*;
@@ -20,7 +23,10 @@ import net.corda.core.transactions.TransactionBuilder;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 
 // ******************
@@ -31,12 +37,14 @@ import java.util.stream.Collectors;
 public class SendPayment extends FlowLogic<String> {
 
     //private variables
+    private UUID invoiceId ;
     private String whoAmI ;
     private String whereTo;
-    private int amount;
+    private Double amount;
 
     //public constructor
-    public SendPayment(String whoAmI, String whereTo, int amount){
+    public SendPayment(UUID invoiceId, String whoAmI, String whereTo, Double amount){
+        this.invoiceId = invoiceId;
         this.whoAmI = whoAmI;
         this.whereTo = whereTo;
         this.amount = amount;
@@ -54,8 +62,13 @@ public class SendPayment extends FlowLogic<String> {
         AccountInfo targetAccount = accountService.accountInfo(whereTo).get(0).getState().getData();
         AnonymousParty targetAcctAnonymousParty = subFlow(new RequestKeyForAccount(targetAccount));
 
+        //fetching the invoice details to verify
+        QueryCriteria.VaultQueryCriteria criteria = new QueryCriteria.VaultQueryCriteria()
+                .withExternalIds(Arrays.asList(myAccount.getIdentifier().getId()));
+        InvoiceState invoiceState = getServiceHub().getVaultService().queryBy(InvoiceState.class).getStates().stream().filter(orderStateStateAndRef -> orderStateStateAndRef.getState().getData().getInvoiceID().equals(invoiceId)).findFirst().get().getState().getData();
+        UUID paymentId = UUID.randomUUID();
         //generating State for transfer
-        PaymentState output = new PaymentState(amount,new AnonymousParty(myKey),targetAcctAnonymousParty);
+        PaymentState output = new PaymentState(paymentId, invoiceId, invoiceState.getOrderId(), amount,new AnonymousParty(myKey),targetAcctAnonymousParty, "COMPLETED", invoiceState.getAmount());
 
         // Obtain a reference to a notary we wish to use.
         /** Explicit selection of notary by CordaX500Name - argument can by coded in flows or parsed from config (Preferred)*/
@@ -77,7 +90,7 @@ public class SendPayment extends FlowLogic<String> {
         //Finalize
         subFlow(new FinalityFlow(signedByCounterParty,
                 Arrays.asList(sessionForAccountToSendTo).stream().filter(it -> it.getCounterparty() != getOurIdentity()).collect(Collectors.toList())));
-        return "Payment send to " + targetAccount.getHost().getName().getOrganisation() + "'s "+ targetAccount.getName()+ " team.";
+        return "Payment send to " + targetAccount.getHost().getName().getOrganisation() + "'s "+ targetAccount.getName()+ " team. PaymentId: "+paymentId;
     }
 }
 
@@ -99,6 +112,15 @@ class SendPaymentResponder extends FlowLogic<Void> {
             @Override
             protected void checkTransaction(@NotNull SignedTransaction stx) throws FlowException {
                 // Custom Logic to validate transaction.
+
+                requireThat(require -> {
+                    ContractState output = stx.getTx().getOutputs().get(0).getData();
+                    PaymentState paymentState = (PaymentState) output;
+                    require.using("Payment amount is not matching with the invoice value",paymentState.getAmount().equals(paymentState.getInvoiceValue()) );
+                    paymentState.setPaymentState("COMPLETED");
+
+                    return null;
+                });
             }
         });
         subFlow(new ReceiveFinalityFlow(counterpartySession));

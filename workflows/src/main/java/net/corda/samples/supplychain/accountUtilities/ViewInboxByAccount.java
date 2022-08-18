@@ -35,22 +35,22 @@ public class ViewInboxByAccount extends FlowLogic<List<String>>{
                 .withExternalIds(Arrays.asList(myAccount.getIdentifier().getId()));
 
 
-        List<String> InternalMessages = getServiceHub().getVaultService().queryBy(InternalMessageState.class,criteria).getStates().stream().map(
+        List<String> InternalMessages = getServiceHub().getVaultService().queryBy(InternalMessageState.class).getStates().stream().map(
                 it -> "\nInternalMessages State : " + it.getState().getData().getTask()).collect(Collectors.toList());
 
-        List<String> payments = getServiceHub().getVaultService().queryBy(PaymentState.class,criteria).getStates().stream().map(
+        List<String> payments = getServiceHub().getVaultService().queryBy(PaymentState.class).getStates().stream().map(
                 it -> "\nPayment State : " +it.getState().getData().getAmount()).collect(Collectors.toList());
 
-        List<String> Cargos = getServiceHub().getVaultService().queryBy(CargoState.class,criteria).getStates().stream().map(
+        List<String> Cargos = getServiceHub().getVaultService().queryBy(CargoState.class).getStates().stream().map(
                 it -> "\nCargo State : " + it.getState().getData().getCargo()).collect(Collectors.toList());
 
-        List<String> invoices = getServiceHub().getVaultService().queryBy(InvoiceState.class,criteria).getStates().stream().map(
+        List<String> invoices = getServiceHub().getVaultService().queryBy(InvoiceState.class).getStates().stream().map(
                 it -> "\nInvoice State : " + it.getState().getData().getAmount()).collect(Collectors.toList());
 
-        List<String> shippingRequest = getServiceHub().getVaultService().queryBy(ShippingRequestState.class,criteria).getStates().stream().map(
-                it -> "\nshippingRequest State : " + it.getState().getData().getCargo()).collect(Collectors.toList());
+        List<String> shippingRequest = getServiceHub().getVaultService().queryBy(ShippingRequestState.class).getStates().stream().map(
+                it -> "\nshippingRequest State : " + it.getState().getData().getShippingId()).collect(Collectors.toList());
 
-        List<String> placeOrders = getServiceHub().getVaultService().queryBy(OrderState.class,criteria).getStates().stream().map(
+        List<String> placeOrders = getServiceHub().getVaultService().queryBy(OrderState.class).getStates().stream().map(
                 it -> "\norder State : " + it.getState().getData().getOrderValue()).collect(Collectors.toList());
 
         return Stream.of(InternalMessages, payments, Cargos,invoices,shippingRequest,placeOrders).flatMap(Collection::stream).collect(Collectors.toList());

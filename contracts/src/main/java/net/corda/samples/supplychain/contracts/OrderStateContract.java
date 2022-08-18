@@ -28,13 +28,18 @@ public class OrderStateContract implements Contract {
 
 
         if (command.getValue() instanceof OrderStateContract.Commands.Create) {
+            OrderState output = (OrderState) outputs.get(0);
+//            System.out.println("name of the buyer------->"+  output.getBuyer().nameOrNull());
+//            System.out.println("ID owning key of the buyer------->"+  output.getBuyer().getOwningKey());
 
+            //verify buyer is buyer and seller is seller
+            //check minimum order value
             requireThat(require -> {
                 require.using("No inputs should be consumed when creating a new Invoice State.", inputs.isEmpty());
                 require.using("Transaction must have exactly one output.", outputs.size() == 1);
-                OrderState output = (OrderState) outputs.get(0);
 
-                require.using("Order Value must be a valid number (Greater than zero)", output.getOrderValue() > 0.0);
+
+                require.using("Order Value must be a valid number (Greater than 0)", output.getOrderValue() > 0);
                 return null;
             });
         } else {

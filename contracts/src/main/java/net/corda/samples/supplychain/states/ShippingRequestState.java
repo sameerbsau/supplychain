@@ -9,24 +9,29 @@ import net.corda.core.identity.Party;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 // *********
 // * State *
 // *********
 @BelongsToContract(ShippingRequestStateContract.class)
 public class ShippingRequestState implements ContractState {
-
+    private UUID shippingId;
     private AnonymousParty pickUpFrom;
     private String deliverTo;
-    private Party shippper;
-    private String cargo;
+    private AnonymousParty shippper;
+    private UUID orderId;
+
+    private String paymentState;
     private List<AbstractParty> participants;
 
-    public ShippingRequestState(AnonymousParty pickUpFrom, String deliverTo, Party shippper, String cargo) {
+    public ShippingRequestState(UUID shippingId, AnonymousParty pickUpFrom, String deliverTo, AnonymousParty shippper, UUID orderId, String paymentState) {
+        this.shippingId = shippingId;
         this.pickUpFrom = pickUpFrom;
         this.deliverTo = deliverTo;
         this.shippper = shippper;
-        this.cargo = cargo;
+        this.orderId = orderId;
+        this.paymentState = paymentState;
         this.participants = new ArrayList<AbstractParty>();
         participants.add(pickUpFrom);
     }
@@ -47,20 +52,36 @@ public class ShippingRequestState implements ContractState {
         this.deliverTo = deliverTo;
     }
 
-    public Party getShippper() {
+    public AnonymousParty getShippper() {
         return shippper;
     }
 
-    public void setShippper(Party shippper) {
+    public void setShippper(AnonymousParty shippper) {
         this.shippper = shippper;
     }
 
-    public String getCargo() {
-        return cargo;
+    public UUID getOrderId() {
+        return orderId;
     }
 
-    public void setCargo(String cargo) {
-        this.cargo = cargo;
+    public void setOrderId(UUID orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getPaymentState() {
+        return paymentState;
+    }
+
+    public UUID getShippingId() {
+        return shippingId;
+    }
+
+    public void setShippingId(UUID shippingId) {
+        this.shippingId = shippingId;
+    }
+
+    public void setPaymentState(String paymentState) {
+        this.paymentState = paymentState;
     }
 
     @Override

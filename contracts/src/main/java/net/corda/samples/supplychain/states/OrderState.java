@@ -6,6 +6,7 @@ import net.corda.core.identity.AbstractParty;
 import net.corda.core.identity.AnonymousParty;
 import net.corda.samples.supplychain.contracts.CargoStateContract;
 import net.corda.samples.supplychain.contracts.OrderStateContract;
+import net.corda.samples.supplychain.states.models.ProductDetails;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
@@ -21,7 +22,7 @@ public class OrderState implements ContractState {
     private AnonymousParty buyer;
 
     private AnonymousParty seller;
-    private String orderDetails;
+    private List<ProductDetails> orderDetails;
 
     private Double orderValue;
     private Instant createdTime;
@@ -30,7 +31,7 @@ public class OrderState implements ContractState {
     private List<AbstractParty> participants;
 
 
-    public OrderState(UUID orderID, AnonymousParty buyer, AnonymousParty seller, String orderDetails, Double orderValue, Instant createdTime, String orderStatus) {
+    public OrderState(UUID orderID, AnonymousParty buyer, AnonymousParty seller, List<ProductDetails> orderDetails, Double orderValue, Instant createdTime, String orderStatus) {
         this.orderID = orderID;
         this.buyer = buyer;
         this.seller = seller;
@@ -67,11 +68,11 @@ public class OrderState implements ContractState {
         this.seller = seller;
     }
 
-    public String getOrderDetails() {
+    public List<ProductDetails> getOrderDetails() {
         return orderDetails;
     }
 
-    public void setOrderDetails(String orderDetails) {
+    public void setOrderDetails(List<ProductDetails> orderDetails) {
         this.orderDetails = orderDetails;
     }
 

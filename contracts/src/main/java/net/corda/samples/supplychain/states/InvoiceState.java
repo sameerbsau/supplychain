@@ -16,27 +16,33 @@ import java.util.UUID;
 @BelongsToContract(InvoiceStateContract.class)
 public class InvoiceState implements ContractState {
 
-    private int amount;
+    private Double amount;
     private AnonymousParty sender;
     private AnonymousParty recipient;
     private UUID invoiceID;
     private List<AbstractParty> participants;
 
-    public InvoiceState(int amount, AnonymousParty sender, AnonymousParty recipient, UUID invoiceID) {
+    private Double orderValue;
+
+    private UUID orderId;
+
+    public InvoiceState(Double amount, AnonymousParty sender, AnonymousParty recipient, UUID invoiceID, Double orderValue, UUID orderId) {
         this.amount = amount;
         this.sender = sender;
         this.recipient = recipient;
         this.invoiceID = invoiceID;
+        this.orderValue = orderValue;
+        this.orderId = orderId;
         this.participants = new ArrayList<AbstractParty>();
         participants.add(recipient);
         participants.add(sender);
     }
 
-    public int getAmount() {
+    public Double getAmount() {
         return amount;
     }
 
-    public void setAmount(int amount) {
+    public void setAmount(Double amount) {
         this.amount = amount;
     }
 
@@ -67,5 +73,21 @@ public class InvoiceState implements ContractState {
     @Override
     public List<AbstractParty> getParticipants() {
         return this.participants;
+    }
+
+    public Double getOrderValue() {
+        return orderValue;
+    }
+
+    public void setOrderValue(Double orderValue) {
+        this.orderValue = orderValue;
+    }
+
+    public UUID getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(UUID orderId) {
+        this.orderId = orderId;
     }
 }

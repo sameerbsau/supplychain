@@ -18,7 +18,7 @@ public class CargoState implements ContractState {
 
     private AnonymousParty pickUpFrom;
     private AnonymousParty deliverTo;
-    private String cargo;
+    private OrderState cargo;
     private AbstractParty shipper;
     private List<AbstractParty> participants;
 
@@ -34,7 +34,7 @@ public class CargoState implements ContractState {
     private String cargoCreatedTime;
 
 
-    public CargoState(AnonymousParty pickUpFrom, AnonymousParty deliverTo, String cargo, AbstractParty shipper,String cargoCreatedTime) {
+    public CargoState(AnonymousParty pickUpFrom, AnonymousParty deliverTo, OrderState cargo, AbstractParty shipper,String cargoCreatedTime) {
         this.pickUpFrom = pickUpFrom;
         this.deliverTo = deliverTo;
         this.cargo = cargo;
@@ -62,11 +62,11 @@ public class CargoState implements ContractState {
         this.deliverTo = deliverTo;
     }
 
-    public String getCargo() {
+    public OrderState getCargo() {
         return cargo;
     }
 
-    public void setCargo(String cargo) {
+    public void setCargo(OrderState cargo) {
         this.cargo = cargo;
     }
 
